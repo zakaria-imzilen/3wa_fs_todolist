@@ -13,3 +13,5 @@ export const routes = [
 		component: Home,
 	},
 ];
+
+export const baseAPIUrl = "http://localhost:4000";

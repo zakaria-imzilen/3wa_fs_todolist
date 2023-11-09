@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "../assets/css/Auth.css";
 import UserContext from "../context/user";
 import useTokenLogin from "../hooks/tokenLogin";
+import { toast } from "react-toastify";
+import { baseAPIUrl } from "../utils";
 
 const Auth = () => {
 	const [emailIn, setEmailIn] = useState("");
@@ -23,7 +25,7 @@ const Auth = () => {
 		(e) => {
 			e.preventDefault();
 
-			fetch("http://localhost:4000/auth/signin", {
+			fetch(`${baseAPIUrl}/auth/signin`, {
 				headers: {
 					"Content-Type": "application/json",
 					origin: "*",
@@ -41,14 +43,19 @@ const Auth = () => {
 						localStorage.setItem("access_token", data.access_token);
 						console.log(data.message);
 
-						user.setUser((prev) => ({
-							...prev,
+						// Let know the components that the user is CONNECTED
+						user?.setUser({
 							isConnected: true,
-							data: data.data,
-						}));
+							data: {
+								...data.user,
+								token: data.access_token,
+							},
+						});
+						toast.success(data.message);
 
 						navigate("/home");
 					} else {
+						toast.error(data.message);
 						console.log(data.message);
 					}
 				})
@@ -115,7 +122,7 @@ const Auth = () => {
 							onClick={() => {
 								const container = document.getElementById("container");
 
-								container.classList.remove("right-panel-active");
+								container?.classList.remove("right-panel-active");
 							}}
 							className="ghost"
 							id="signIn"
@@ -130,7 +137,7 @@ const Auth = () => {
 							onClick={() => {
 								const container = document.getElementById("container");
 
-								container.classList.add("right-panel-active");
+								container?.classList.add("right-panel-active");
 							}}
 							className="ghost"
 							id="signUp"
