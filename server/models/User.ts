@@ -1,7 +1,10 @@
-import { Schema, model } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 import { v4 } from "uuid";
 
 const userSchema = new Schema({
+    _id: {
+        type: Types.ObjectId,
+    },
     id: {
         type: String,
         required: true,

@@ -1,5 +1,6 @@
 import { Schema, Types, model } from "mongoose";
 import { v4 } from "uuid";
+import { TodoStatus } from "../interfaces";
 
 const todoSchema = new Schema({
     id: {
@@ -14,6 +15,10 @@ const todoSchema = new Schema({
     user: {
         type: Types.ObjectId,
         ref: "User"
+    },
+    status: {
+        type: String,
+        default: TodoStatus.TODO
     }
 });
 

@@ -30,14 +30,14 @@ export const getTodos = (req: Request, res: Response, next: NextFunction) => {
 
     if (!page) {
         Todo.find().then((resp) => {
-            res.status(200).send(resp);
+            res.status(200).send({ status: true, data: resp });
         }).catch((err) => {
             console.log(err)
             next({ ...err, status: 400 });
         });
     } else {
         Todo.find().skip(Number(page) == 1 ? 0 : Number(page) * DOCUMENTS_PER_PAGE).then((resp) => {
-            res.status(200).send(resp);
+            res.status(200).send({ status: true, data: resp });
         }).catch((err) => {
             console.log(err)
 

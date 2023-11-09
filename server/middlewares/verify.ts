@@ -8,9 +8,20 @@ export default (req: Request, res: Response, next: NextFunction) => {
 
     if (!token) return next({ status: 401, message: "Invalid JWT token" });
 
-    const verifyToken = verify(token, process.env.JWT_SECRET ?? "3i34tdfgjk345");
+    try {
+        const decodedData = verify(
+            token,
+            process.env.JWT_SECRET ?? "3i34tdfgjk345"
+        );
+        // If the verification 👆🏻 doesn't go well, JWT throws an error
+        // Which catch handles it down 👇🏻
 
-    if (!verifyToken) return next({ status: 401, message: "Expired JWT token" });
+        req.admin = decodedData;
 
-    next();
-}
+        next();
+    } catch (error) {
+        console.log(token, error)
+
+        next({ status: 401, message: "Expired JWT token" });
+    }
+};

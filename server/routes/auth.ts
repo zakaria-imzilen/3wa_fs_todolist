@@ -1,33 +1,52 @@
 import { Router } from "express";
 import passport from "passport";
-import { signin } from "../controllers/auth";
-import jwt from "jsonwebtoken"
-
+import { getUserData, signin } from "../controllers/auth";
+import jwt from "jsonwebtoken";
+import { UserObj } from "../interfaces";
+import { generateUsers } from "../config/dummyDB";
+import User from "../models/User";
+import { body } from "express-validator";
+import { validateIncData } from "../middlewares/bodyValid";
+import verify from "../middlewares/verify";
 
 const authRouter = Router();
 
+
+authRouter.get("/signin/failure", (req, res, next) =>
+    next({ message: "Wrong credentials", status: 401 })
+);
+
+const validateEmail = body("email").isEmail().normalizeEmail();
 // Authentication Local Strategy -- DB
 // body: { email: "", pwd: "" }
 // midd2: done(null, false)
 // midd2: done(null, user)
-authRouter.post("/signin", passport.authenticate("local"), signin);
+authRouter.post(
+    "/signin",
+    validateEmail,
+    validateIncData,
+    passport.authenticate("local",
+        { failureRedirect: "/auth/signin/failure" }
+    ),
+    // 👎🏻 Authentication Failure: Redirect to the route with the path "/auth/signin/failure", method: "GET"
+    // 👍🏻 Authentication Success: next()
+    signin
+);
+
 
 // Route: Authentication Auto
-authRouter.get("/token", (req, res, next) => {
-    // 1- Retrieve the access token from the header Authorization
-    const token = req.headers.authorization?.split(" ")[1]; // => ["Bearer", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."]
+// Verify the token passed down and retrieve the user data in case of success
+authRouter.get("/token", verify, getUserData);
 
-    if (!token) {
-        return res.status(401).json({ message: "Missing Authorization header" });
-    }
+// Dummy DB User
+authRouter.get("/users-dummy/:num", (req, res, next) => {
+    generateUsers(Number(req.params.num));
 
-    const decodedData = jwt.verify(token, "3i34tdfgjk345");
-
-    if (!decodedData) {
-        return res.status(401).json({ message: "Expired Token" });
-    }
-
-    res.status(200).json({ message: "Successfuly authenticated", data: decodedData });
+    User.find().then((data) => {
+        res.send(data);
+    }).catch((err) => {
+        next(err);
+    })
 });
 
-export default authRouter
+export default authRouter;
