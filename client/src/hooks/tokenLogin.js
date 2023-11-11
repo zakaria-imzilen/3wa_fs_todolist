@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import UserContext from "../context/user";
-import { baseAPIUrl } from "../utils";
+import { axiosInstance, baseAPIUrl } from "../api";
 
 export default () => {
 	const navigate = useNavigate();
@@ -21,28 +21,22 @@ export default () => {
 		} else {
 			if (!user.user.isConnected) {
 				// Token found in his localStorage
-				fetch(`${baseAPIUrl}/auth/token`, {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				})
+				axiosInstance
+					.get("/auth")
 					.then((resp) => {
 						if (resp.status !== 200) {
 							toast.error("Couldn't login using access token");
 						} else {
-							return resp.json();
-						}
-					})
-					.then((data) => {
-						// data: {message: "", data: {id: "", email:""}}
-						if (data) {
-							console.log(data);
-							toast.success(data.message);
-							user.setUser({
-								isConnected: true,
-								data: { ...data, token },
-							}); // Change his context status
-							navigate("/home");
+							const data = resp.data;
+							if (data) {
+								console.log(data);
+								toast.success(data.message);
+								user.setUser({
+									isConnected: true,
+									data: { ...data, token },
+								}); // Change his context status
+								navigate("/home");
+							}
 						}
 					})
 					.catch((err) => {

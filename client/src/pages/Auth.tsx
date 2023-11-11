@@ -4,7 +4,7 @@ import "../assets/css/Auth.css";
 import UserContext from "../context/user";
 import useTokenLogin from "../hooks/tokenLogin";
 import { toast } from "react-toastify";
-import { baseAPIUrl } from "../utils";
+import { axiosInstance, baseAPIUrl } from "../api";
 
 const Auth = () => {
 	const [emailIn, setEmailIn] = useState("");
@@ -25,41 +25,47 @@ const Auth = () => {
 		(e) => {
 			e.preventDefault();
 
-			fetch(`${baseAPIUrl}/auth/signin`, {
-				headers: {
-					"Content-Type": "application/json",
-					origin: "*",
-				},
-				method: "POST",
-				body: JSON.stringify({
-					email: emailIn,
-					pwd: pwdIn,
-				}),
-			})
-				.then((resp) => resp.json())
-				.then((data) => {
-					if (data?.access_token) {
-						// Storing the Access token in LocalStorage
-						localStorage.setItem("access_token", data.access_token);
-						console.log(data.message);
+			axiosInstance.get(`/connect`)
+				.then(respConn => {
+					axiosInstance.post(`/auth/signin`, {
 
-						// Let know the components that the user is CONNECTED
-						user?.setUser({
-							isConnected: true,
-							data: {
-								...data.user,
-								token: data.access_token,
-							},
-						});
-						toast.success(data.message);
+						email: emailIn,
+						pwd: pwdIn,
+						// _csrf: respConn._csrf
+					})
+						.then((resp) => {
+							const data = resp.data;
 
-						navigate("/home");
-					} else {
-						toast.error(data.message);
-						console.log(data.message);
-					}
+							if (resp.status !== 200 && resp.status !== 201) {
+								toast.error(data.message);
+								console.log(data.message);
+							}
+							if (data?.access_token) {
+								// Storing the Access token in LocalStorage
+								localStorage.setItem("access_token", data.access_token);
+								console.log(data.message);
+
+								if (data.refreshToken)
+									localStorage.setItem("refresh_token", data.refreshToken);
+
+								// Let know the components that the user is CONNECTED
+								user?.setUser({
+									isConnected: true,
+									data: {
+										...data.user,
+										token: data.access_token,
+									},
+								});
+								toast.success(data.message);
+
+								navigate("/home");
+							} else {
+								toast.error(data.message);
+								console.log(data.message);
+							}
+						})
+						.catch((err) => console.log(err));
 				})
-				.catch((err) => console.log(err));
 		},
 		[emailIn, pwdIn]
 	);

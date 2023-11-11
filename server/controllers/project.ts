@@ -7,7 +7,7 @@ export const getProjects = (
     next: NextFunction
 ) => {
     const adminId = req.admin?._id;
-
+    console.log(req.admin)
     if (!adminId)
         return next({
             status: 401,

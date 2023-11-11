@@ -8,13 +8,18 @@ import session from "express-session";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import csurf from "csurf";
 
 import TodoRouter from "./routes/todo";
+import projectRouter from "./routes/projects";
+import { generateProjects, generateTasks } from "./config/dummyDB";
+import { UserObj } from "./interfaces";
+import { activityLogger } from "./config/logger";
 
 configDotenv();
 
 const app: Application = express();
-const PORT = process.env.PORT;
+const PORT = Number(process.env.PORT);
 
 db();
 app.use(cookieParser());
@@ -36,9 +41,6 @@ app.use(morgan("dev"));
 // PassportJS
 app.use(passport.initialize());
 import "./config/pass";
-import projectRouter from "./routes/projects";
-import { generateProjects, generateTasks } from "./config/dummyDB";
-import { UserObj } from "./interfaces";
 
 declare global {
     namespace Express {
@@ -47,26 +49,56 @@ declare global {
         }
 
         export interface User {
-            _id: String,
-            id: String,
-            fullName: String,
-            email: String,
-            pwd: String,
+            _id: String;
+            id: String;
+            fullName: String;
+            email: String;
+            pwd: String;
         }
     }
 }
 
-
-app.use((req, res, next) => {
-    console.log(req.signedCookies, req.cookies)
-    next();
-})
 // BodyParser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use(cors({ origin: "*", credentials: true }));
+app.use(
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true,
+    })
+);
+app.use((req, res, next) => {
+    console.log("CSRF Header: ", req.headers);
+    next();
+});
 // Generate a NEW CSRF Token and save it in a cookie
+// app.use(csurf({ cookie: { httpOnly: true } }));
+
+// Add headers before the routes are defined
+app.use(function (req, res, next) {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "X-Requested-With,content-type"
+    );
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    next();
+});
+app.use((req, res, next) => {
+    console.log("Cookies: ", req.cookies);
+    next();
+});
+
+app.use("/connect", (req, res, next) => {
+    res
+        // .cookie("X-CSRF-TOKEN", req.csrfToken(), { httpOnly: true })
+        .send({ message: "Good" });
+});
 
 // Routes
 app.use("/auth", authRouter);
@@ -78,6 +110,7 @@ app.use((req, res, next) => {
 });
 
 app.use((err: any, req: Request, res: Response, next: NextFunction): any => {
+    console.log("Last error middleware", err);
     res
         .status(err.status ?? 500)
         .send({ message: err.message ?? "Something went wrong", ...err });
