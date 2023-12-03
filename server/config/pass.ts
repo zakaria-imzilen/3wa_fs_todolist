@@ -37,6 +37,7 @@ passport.use(
                 pwd,
             }, "-pwd")
                 .then((data: UserObj | any) => {
+                    console.log("data", data);
                     if (!data) {
                         console.log("PSS: User not found", data, email, pwd);
                         done(null, false);

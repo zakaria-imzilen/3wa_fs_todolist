@@ -1,17 +1,13 @@
 import React, { useCallback, useContext } from "react";
 import { styled } from "@mui/material/styles";
 import {
-    Box,
-    CssBaseline,
     Divider,
-    Drawer,
     IconButton,
     List,
     ListItem,
     ListItemButton,
     ListItemIcon,
     ListItemText,
-    Toolbar,
     Typography,
     useTheme,
 } from "@mui/material";
@@ -59,16 +55,8 @@ const PrjAside = ({ open, setOpen }) => {
     }, []);
 
     return (
-        <Drawer
-            variant="permanent"
-            sx={{
-                width: drawerWidth,
-                flexShrink: 0,
-                [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-            }}
-            anchor="left"
-            open={open}
-        >
+
+        <>
             <DrawerHeader>
                 <Typography variant="body1">Welcome {userContext?.user?.data?.fullName}</Typography>
 
@@ -95,7 +83,8 @@ const PrjAside = ({ open, setOpen }) => {
                 ))}
             </List>
             <Divider />
-        </Drawer>
+        </>
+
 
     );
 };

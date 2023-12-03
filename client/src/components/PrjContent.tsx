@@ -3,6 +3,11 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
   Chip,
   Container,
   Grid,
@@ -21,32 +26,42 @@ import React, {
 } from "react";
 import ProjectContext from "../context/project";
 import UserContext from "../context/user";
-import { fetchProject } from "../api";
+import { fetchProject, updateTodo } from "../api";
 import { toast } from "react-toastify";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { TodoObj, TodoStatus } from "../interfaces";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import Status from "./Status";
+import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import StatusStack from "./board/StatusStack";
+import AlertContext from "../context/alert";
 
-const tasksStatus = [TodoStatus.TODO];
+const tasksStatus = [TodoStatus.TODO, TodoStatus.WIP, TodoStatus.DONE];
 
 const PrjContent = () => {
   const projectContext = useContext(ProjectContext);
   const userContext = useContext(UserContext);
+  const alertContext = useContext(AlertContext);
 
   const [todos, setTodos] = useState<Array<TodoObj>>([]);
-  const [wipTodos, setWIPTodos] = useState<Array<TodoObj>>([]);
-  const [doneTodos, setDoneTodos] = useState<Array<TodoObj>>([]);
-  const [draggedTodos, setDraggedTodos] = useState<Array<TodoObj>>([]);
+
+  const tasksTodos = useMemo<Array<TodoObj>>(
+    () => todos.filter((todo) => todo.status == TodoStatus.TODO),
+    [todos]
+  );
+  const wipTodos = useMemo<Array<TodoObj>>(
+    () => todos.filter((todo) => todo.status == TodoStatus.WIP),
+    [todos]
+  );
+  const doneTodos = useMemo<Array<TodoObj>>(
+    () => todos.filter((todo) => todo.status == TodoStatus.DONE),
+    [todos]
+  );
 
   useEffect(() => {
-    const { signal } = new AbortController();
-    console.log("Project");
-    if (projectContext?.selectedPrj?.id && userContext?.user.data?.token) {
+    if (projectContext?.selectedPrj?.id && userContext?.user.isConnected) {
       fetchProject({
-        access_token:
-          userContext?.user.data?.token ?? localStorage.getItem("access_token"),
         prjId: projectContext?.selectedPrj.id,
-        signal,
       })
         .then((resp) => {
           if (!resp.status) {
@@ -54,26 +69,19 @@ const PrjContent = () => {
             console.error(resp.message);
           } else {
             toast.success(resp.message);
+            console.log(resp)
+
+
             projectContext.setSelectedPrj((prev) => ({
               ...prev,
-              data: resp.data,
+              data: {
+                ...resp.project,
+                todos: resp.data
+              }
             }));
 
-            setTodos(
-              resp.data.todos.filter(
-                (todo: TodoObj) => todo.status === TodoStatus.TODO
-              )
-            );
-            setWIPTodos(
-              resp.data.todos.filter(
-                (todo: TodoObj) => todo.status === TodoStatus.WIP
-              )
-            );
-            setDoneTodos(
-              resp.data.todos.filter(
-                (todo: TodoObj) => todo.status === TodoStatus.DONE
-              )
-            );
+            setTodos(resp.data);
+
           }
         })
         .catch((err) => {
@@ -82,31 +90,50 @@ const PrjContent = () => {
     }
   }, [projectContext?.selectedPrj?.id, userContext?.user.data?.token]);
 
-  const currentTodos = useMemo(
-    () =>
-      projectContext?.selectedPrj?.data?.todos.filter(
-        (todo) => todo.status == TodoStatus.TODO
-      ),
-    [projectContext?.selectedPrj?.data]
-  );
+  const handleStatusChange = async (todoId: string, newStatus: TodoStatus) => {
+    try {
+      const updateResult = await updateTodo(todoId, {
+        status: newStatus,
+      });
 
-  const handleOnDragOverTodo = useCallback((e) => e.preventDefault(), []);
-  const handleOnDraggingTodo = useCallback((e, todo) => {
-    e.preventDefault();
-    setDraggedTodos((prev) => [...prev, todo]);
-  }, []);
+      const { status, message } = updateResult;
 
-  const onDragEnd = (result) => {
-    const newItems = Array.from(todos);
-    const [removed] = newItems.splice(result.source.index, 1);
-    newItems.splice(result.destination.index, 0, removed);
-    setWIPTodos(newItems);
+      if (status) {
+        const { newTodoData } = updateResult;
+
+
+        // Change UI
+        const updatedTodos = todos.map((todo) => {
+          if (todo._id === todoId) {
+            return newTodoData;
+          }
+          return todo;
+        });
+        setTodos(updatedTodos);
+      }
+
+      const messageToDisplay = message ? message : status ? "Updated successfuly" : "Couldn't update the todo, please try again!"
+      alertContext.setOpen({
+        status: true,
+        message: messageToDisplay,
+      });
+
+      if (!status) return;
+
+    } catch (error) {
+      alertContext.setOpen({
+        status: true,
+        message: error.message ?? "Something went wrong",
+      });
+    }
+
+    // setTodos(updatedTodos);
   };
 
   return !projectContext?.selectedPrj?.data ? (
     "No project selected yet"
   ) : (
-    <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+    <>
       <Typography variant="h4">
         {typeof projectContext?.selectedPrj?.data?.title == "string" &&
           projectContext?.selectedPrj?.data?.title[0].toUpperCase() +
@@ -140,41 +167,29 @@ const PrjContent = () => {
         </AccordionDetails>
       </Accordion>
 
-      <Container maxWidth={"lg"} sx={{ marginTop: 3 }}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Grid container>
-            { }
-            <Droppable droppableId="droppable">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef}>
-                  {currentTodos?.map((item, index) => (
-                    <Draggable
-                      key={item._id}
-                      draggableId={item._id}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <ListItem>
-                            <ListItemButton>
-                              <ListItemText primary={item.label} />
-                            </ListItemButton>
-                          </ListItem>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                </div>
-              )}
-            </Droppable>
-          </Grid>
-        </DragDropContext>
-      </Container>
-    </Box>
+      <Grid
+        container
+        maxWidth={"lg"}
+        gap={2}
+        wrap="nowrap"
+        sx={{ marginTop: 3 }}
+      >
+        {tasksStatus.map((status) => (
+          <StatusStack
+            key={status}
+            status={status}
+            todos={
+              status == TodoStatus.TODO
+                ? tasksTodos
+                : status == TodoStatus.WIP
+                  ? wipTodos
+                  : doneTodos
+            }
+            handleStatusChange={handleStatusChange}
+          />
+        ))}
+      </Grid>
+    </>
   );
 };
 

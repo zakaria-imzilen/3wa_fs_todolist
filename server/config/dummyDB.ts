@@ -3,6 +3,9 @@ import User from "../models/User";
 import Todo from "../models/Todo";
 import Project from "../models/Project";
 import { TodoStatus } from "../interfaces";
+import { Types } from "mongoose";
+import { ObjectIdInt } from "../interfaces/dummyDB";
+import { activityLogger } from "./logger";
 
 type User = {
     fullName: String;
@@ -13,7 +16,8 @@ type User = {
 type Task = {
     label: String;
     user: Object;
-    status: TodoStatus
+    status: TodoStatus;
+    projectId: Types.ObjectId
 };
 
 type Project = {
@@ -22,7 +26,7 @@ type Project = {
     contributors: Array<{}>;
 };
 
-export const generateUsers = (num: number): void => {
+export const generateUsers = (num: number) => {
     const users: Array<User> = [];
 
     for (let i = 0; i < num; i++) {
@@ -33,7 +37,7 @@ export const generateUsers = (num: number): void => {
         });
     }
 
-    User.insertMany(users)
+    return User.insertMany(users)
         .then((resp) => {
             console.log(resp);
         })
@@ -65,7 +69,7 @@ export const generateProjects = async (num: number) => {
         });
     }
 
-    Project.insertMany(projects)
+    return Project.insertMany(projects)
         .then((resp) => {
             console.log(resp);
         })
@@ -78,30 +82,20 @@ export const generateTasks = async (num: number) => {
     const tasks: Array<Task> = [];
 
     try {
-        const randomUsersIds = await User.find({}).select("_id");
-
         for (let i = 0; i < num; i++) {
-            const randomId =
-                randomUsersIds[Math.floor(Math.random() * randomUsersIds.length)]._id;
+            const randomUserId = await guessRandomUserId();
+            const randomPrjId = await guessRandomProjectId();
 
-            tasks.push({
+            if (randomUserId && randomPrjId) tasks.push({
                 label: faker.word.words(),
-                user: randomId,
-                status: TodoStatus.TODO
+                user: randomUserId,
+                status: TodoStatus.TODO,
+                projectId: randomPrjId
             });
         }
 
         Todo.insertMany(tasks)
             .then((resp) => {
-                resp.forEach((task) => {
-                    Project.updateOne(
-                        { _id: "6547fff4b59207a862648a6c" },
-                        { $addToSet: { todos: task._id } }
-                    )
-                        .then((prjdata) => console.log(prjdata))
-                        .catch((erro) => console.log(erro));
-                });
-
                 console.log("Success - Generating new tasks response: ", resp);
             })
             .catch((err) => {
@@ -111,3 +105,29 @@ export const generateTasks = async (num: number) => {
         console.log(error);
     }
 };
+
+const guessRandomUserId = async (): Promise<ObjectIdInt | null> => {
+    try {
+        const randomUsersIds = await User.find({}).select("_id");
+        const randomId =
+            randomUsersIds[Math.floor(Math.random() * randomUsersIds.length)]._id;
+        return randomId;
+    } catch (error) {
+        console.log(error);
+        activityLogger.error(error);
+        return null;
+    }
+}
+
+const guessRandomProjectId = async (): Promise<Types.ObjectId | null> => {
+    try {
+        const randomPrjIds = await Project.find({}).select("_id");
+        const randomId =
+            randomPrjIds[Math.floor(Math.random() * randomPrjIds.length)]._id;
+        return randomId;
+    } catch (error) {
+        console.log(error);
+        activityLogger.error(error);
+        return null;
+    }
+}

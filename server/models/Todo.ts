@@ -19,6 +19,10 @@ const todoSchema = new Schema({
     status: {
         type: String,
         default: TodoStatus.TODO
+    },
+    projectId: {
+        type: Types.ObjectId,
+        required: true
     }
 });
 

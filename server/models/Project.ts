@@ -16,13 +16,6 @@ const projectSchema = new Schema({
             ref: "User"
         }
     ],
-    todos: [
-        {
-            type: Types.ObjectId,
-            ref: "Todo"
-        }
-    ]
-    // todos: ["rihsb4785352w89", "487whjdsdsffdg", "r23784bdfsjfdf"]
 }, { timestamps: true });
 
 export default model("Project", projectSchema);

@@ -21,14 +21,16 @@ export const signin = (req: Request, res: Response, next: NextFunction) => {
             res
                 .cookie("refreshToken", generatedRefToken, {
                     // path: '/',
-                    // secure: true,
-                    httpOnly: true,
+                    secure: false,
+                    httpOnly: false,
+                    domain: "localhost"
                     // sameSite: 'none',
                 })
                 .cookie("accessToken", generatedAccToken, {
                     // path: '/',
-                    // secure: true,
-                    httpOnly: true,
+                    secure: false,
+                    httpOnly: false,
+                    domain: "localhost"
                     // sameSite: 'none',
                 })
                 .status(200)

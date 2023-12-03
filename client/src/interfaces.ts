@@ -8,10 +8,20 @@ export enum TodoStatus {
 
 export interface TodoObj {
     _id: string;
+    id: string;
     label: string;
     status: TodoStatus;
 }
 
+export interface TodoObjNotOptionalProperties {
+    label?: string;
+    status?: TodoStatus;
+}
+
+export interface TodoObjToUpdate {
+    _id: string;
+    newData: TodoObjNotOptionalProperties;
+}
 
 export interface UserObj {
     _id: string,
@@ -23,7 +33,7 @@ export interface UserObj {
 
 export interface UserCntxtType {
     user: { isConnected: boolean, data: null | UserObj },
-    setUser: Dispatch<SetStateAction<{ isConnected: boolean, data: null | UserObj }>>
+    setUser: Dispatch<SetStateAction<{ isConnected: boolean; data: UserObj | null; }>>
 }
 
 export interface PrjObj {
@@ -42,3 +52,8 @@ export interface ProjectCntxtType {
     selectedPrj: null | { id: null | string, data: null | PrjObj },
     setSelectedPrj: Dispatch<SetStateAction<{ id: null | string, data: null | PrjObj }>>,
 };
+
+export interface AlertContextInt {
+    open: { status: boolean, message: string },
+    setOpen: Dispatch<SetStateAction<{ status: boolean, message: string }>>
+}

@@ -1,4 +1,6 @@
 import { createContext } from "react";
 import { UserCntxtType } from "../interfaces";
 
-export default createContext<UserCntxtType | null>(null);
+const UserContext = createContext<UserCntxtType>({ setUser: () => { }, user: { isConnected: false, data: null }, });
+
+export default UserContext;
