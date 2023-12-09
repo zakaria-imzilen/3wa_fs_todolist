@@ -1,6 +1,7 @@
 import React, { useCallback, useContext } from "react";
 import { styled } from "@mui/material/styles";
 import {
+    Box,
     Divider,
     IconButton,
     List,
@@ -11,7 +12,7 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import WorkIcon from '@mui/icons-material/Work';
+import WorkIcon from "@mui/icons-material/Work";
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -28,8 +29,6 @@ import { PrjObj } from "../interfaces";
 */
 
 const drawerWidth = 280;
-
-
 
 const DrawerHeader = styled("div")(({ theme }) => ({
     display: "flex",
@@ -51,14 +50,16 @@ const PrjAside = ({ open, setOpen }) => {
     }, []);
 
     const handleSelectPrj = useCallback(({ prjId, selectedPrjId }) => {
-        if (prjId !== selectedPrjId || !selectedPrjId) projectContext?.setSelectedPrj({ id: prjId, data: null });
+        if (prjId !== selectedPrjId || !selectedPrjId)
+            projectContext?.setSelectedPrj({ id: prjId, data: null });
     }, []);
 
     return (
-
         <>
             <DrawerHeader>
-                <Typography variant="body1">Welcome {userContext?.user?.data?.fullName}</Typography>
+                <Typography variant="body1">
+                    Welcome {userContext?.user?.data?.fullName}
+                </Typography>
 
                 <IconButton onClick={handleDrawerClose}>
                     {theme.direction === "ltr" ? (
@@ -69,23 +70,33 @@ const PrjAside = ({ open, setOpen }) => {
                 </IconButton>
             </DrawerHeader>
             <Divider />
-            <Typography paddingX={2} marginY={1} variant="h6">Projects</Typography>
-            <List>
-                {projectContext?.projects?.map((prj: PrjObj) => (
-                    <ListItem key={prj._id} disablePadding>
-                        <ListItemButton onClick={() => handleSelectPrj({ prjId: prj._id, selectedPrjId: projectContext.selectedPrj?.id })}>
-                            <ListItemIcon>
-                                <WorkIcon />
-                            </ListItemIcon>
-                            <ListItemText primary={prj.title[0].toUpperCase() + prj.title.slice(1)} />
-                        </ListItemButton>
-                    </ListItem>
-                ))}
-            </List>
-            <Divider />
+            <Box>
+                <Typography paddingX={2} marginY={1} variant="h6">
+                    Projects
+                </Typography>
+                <List>
+                    {projectContext?.projects?.map((prj: PrjObj) => (
+                        <ListItem key={prj._id} disablePadding>
+                            <ListItemButton
+                                onClick={() =>
+                                    handleSelectPrj({
+                                        prjId: prj._id,
+                                        selectedPrjId: projectContext.selectedPrj?.id,
+                                    })
+                                }
+                            >
+                                <ListItemIcon>
+                                    <WorkIcon style={{ color: "#161A30" }} />
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={prj.title[0].toUpperCase() + prj.title.slice(1)}
+                                />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
+                </List>
+            </Box>
         </>
-
-
     );
 };
 

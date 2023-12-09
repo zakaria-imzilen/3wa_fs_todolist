@@ -1,0 +1,67 @@
+import { toast } from "react-toastify";
+import { axiosInstance } from "../api";
+import {
+    TodoObjNotOptionalProperties,
+    TodoStatus,
+    UserObj,
+} from "../interfaces";
+import {
+    createTodoIntFail,
+    createTodoIntSucc,
+    updateTodoIntFail,
+    updateTodoIntSucc,
+} from "../interfaces/api";
+
+export const createTodo = async (newData: {
+    label: string;
+    status: TodoStatus;
+    projectId: string;
+    collaborators: UserObj[];
+}): Promise<createTodoIntSucc | createTodoIntFail> => {
+    try {
+        const { data, status } = await axiosInstance.post(
+            `/todos/project/${newData.projectId}`,
+            newData
+        );
+
+        if (status == 201) {
+            return {
+                status: true,
+                message: data.message,
+                newTodoData: data.data,
+            };
+        }
+        return {
+            status: false,
+            message: data.message,
+        };
+    } catch (error) {
+        console.error(error);
+        return {
+            status: false,
+            message: error.message ?? "Couldn't create the todo for some reason",
+        };
+    }
+};
+
+export const updateTodo = async (
+    todoId: string,
+    newData: TodoObjNotOptionalProperties
+): Promise<updateTodoIntSucc | updateTodoIntFail> => {
+    try {
+        const { status, data } = await axiosInstance.put(
+            `/todos/${todoId}`,
+            newData
+        );
+
+        if (status === 200)
+            return { status: true, message: data?.message, newTodoData: data.data };
+        return { status: false, message: data.message };
+    } catch (error) {
+        console.error(error);
+        return {
+            message: error.message ?? "Couldn't update the todo",
+            status: false,
+        };
+    }
+};

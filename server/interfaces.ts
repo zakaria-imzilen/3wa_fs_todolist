@@ -3,12 +3,18 @@ export interface TodoObj {
     label: String;
 }
 
+export enum UserRole {
+    Admin = "admin",
+    User = "user"
+}
+
 export interface UserObj {
     _id: String,
     id: String,
     fullName: String,
     email: String,
     pwd: String,
+    role: UserRole
 }
 
 export interface PrjObj {

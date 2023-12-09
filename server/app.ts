@@ -13,7 +13,7 @@ import csurf from "csurf";
 import TodoRouter from "./routes/todo";
 import projectRouter from "./routes/projects";
 import { generateProjects, generateTasks, generateUsers } from "./config/dummyDB";
-import { UserObj } from "./interfaces";
+import { PrjObj, UserObj } from "./interfaces";
 import { activityLogger } from "./config/logger";
 
 configDotenv();
@@ -46,6 +46,7 @@ declare global {
     namespace Express {
         export interface Request {
             admin?: UserObj | any;
+            project?: PrjObj | any;
         }
 
         export interface User {
@@ -108,4 +109,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction): any => {
 
 app.listen(PORT, async () => {
     console.log("Server listening on port: ", PORT);
+
+    // await generateUsers(3);
+    // await generateProjects(30);
+    // await generateTasks(100);
 });

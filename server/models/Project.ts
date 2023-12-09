@@ -12,8 +12,14 @@ const projectSchema = new Schema({
     },
     contributors: [
         {
-            type: Types.ObjectId,
-            ref: "User"
+            _id: {
+                type: Types.ObjectId,
+                ref: "User"
+            },
+            role: {
+                type: String,
+                enum: ["admin", "user"]
+            }
         }
     ],
 }, { timestamps: true });

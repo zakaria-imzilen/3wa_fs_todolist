@@ -55,27 +55,6 @@ export const fetchProject = async ({ prjId }) => {
     }
 };
 
-export const updateTodo = async (
-    todoId: string,
-    newData: TodoObjNotOptionalProperties
-): Promise<updateTodoIntSucc | updateTodoIntFail> => {
-    try {
-        const { status, data } = await axiosInstance.put(
-            `/todos/${todoId}`,
-            newData
-        );
-
-        if (status === 200) return { status: true, message: data?.message, newTodoData: data.data };
-        return { status: false, message: data.message };
-    } catch (error) {
-        console.error(error);
-        return {
-            message: error.message ?? "Couldn't update the todo",
-            status: false,
-        };
-    }
-};
-
 export const loginToken = async () => {
     // GET /auth/
     try {

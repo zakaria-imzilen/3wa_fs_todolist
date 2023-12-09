@@ -28,7 +28,22 @@ export interface UserObj {
     fullName: string,
     email: string,
     pwd: string,
-    token: string
+}
+
+export enum UserRole {
+    Admin = "admin",
+    User = "user"
+}
+
+export interface ContributorInt {
+    _id: {
+        _id: string,
+        id: string,
+        fullName: string,
+        email: string,
+        pwd: string,
+    },
+    role: UserRole
 }
 
 export interface UserCntxtType {
@@ -38,9 +53,10 @@ export interface UserCntxtType {
 
 export interface PrjObj {
     _id: string,
+    id: string,
     title: string,
     creator: UserObj,
-    contributors: Array<UserObj>,
+    contributors: Array<ContributorInt>,
     todos: Array<TodoObj>,
     createdAt: string,
     updatedAt: string,

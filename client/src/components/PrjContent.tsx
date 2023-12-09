@@ -1,40 +1,16 @@
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  Chip,
-  Container,
-  Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Typography,
-} from "@mui/material";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { Box, Chip, Grid, Tooltip, Typography } from "@mui/material";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import ProjectContext from "../context/project";
 import UserContext from "../context/user";
-import { fetchProject, updateTodo } from "../api";
+import { fetchProject } from "../api";
 import { toast } from "react-toastify";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { TodoObj, TodoStatus } from "../interfaces";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import Status from "./Status";
-import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import { TodoObj, TodoStatus, UserRole } from "../interfaces";
 import StatusStack from "./board/StatusStack";
 import AlertContext from "../context/alert";
+import { handleStatusChangeArgsType } from "../../src/interfaces/projectContent";
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import PersonIcon from '@mui/icons-material/Person';
+import { updateTodo } from "../api/todo";
 
 const tasksStatus = [TodoStatus.TODO, TodoStatus.WIP, TodoStatus.DONE];
 
@@ -69,28 +45,29 @@ const PrjContent = () => {
             console.error(resp.message);
           } else {
             toast.success(resp.message);
-            console.log(resp)
-
+            console.log(resp);
 
             projectContext.setSelectedPrj((prev) => ({
               ...prev,
               data: {
                 ...resp.project,
-                todos: resp.data
-              }
+                todos: resp.data,
+              },
             }));
 
             setTodos(resp.data);
-
           }
         })
         .catch((err) => {
           toast.error(err?.message);
         });
     }
-  }, [projectContext?.selectedPrj?.id, userContext?.user.data?.token]);
+  }, [projectContext?.selectedPrj?.id, userContext?.user.isConnected]);
 
-  const handleStatusChange = async (todoId: string, newStatus: TodoStatus) => {
+  const handleStatusChange = useCallback(async (param: handleStatusChangeArgsType) => {
+    const todoId = param.todoId;
+    const newStatus = param.status;
+
     try {
       const updateResult = await updateTodo(todoId, {
         status: newStatus,
@@ -101,25 +78,32 @@ const PrjContent = () => {
       if (status) {
         const { newTodoData } = updateResult;
 
-
         // Change UI
-        const updatedTodos = todos.map((todo) => {
-          if (todo._id === todoId) {
-            return newTodoData;
-          }
-          return todo;
+
+        setTodos((todos) => {
+          const updatedTodos = todos.map((todo) => {
+            if (todo._id === todoId) {
+              console.log(todo)
+              return newTodoData;
+            }
+            return todo;
+          });
+
+          return updatedTodos;
         });
-        setTodos(updatedTodos);
       }
 
-      const messageToDisplay = message ? message : status ? "Updated successfuly" : "Couldn't update the todo, please try again!"
+      const messageToDisplay = message
+        ? message
+        : status
+          ? "Updated successfuly"
+          : "Couldn't update the todo, please try again!";
       alertContext.setOpen({
         status: true,
         message: messageToDisplay,
       });
 
       if (!status) return;
-
     } catch (error) {
       alertContext.setOpen({
         status: true,
@@ -128,44 +112,62 @@ const PrjContent = () => {
     }
 
     // setTodos(updatedTodos);
-  };
+  }, []);
 
   return !projectContext?.selectedPrj?.data ? (
     "No project selected yet"
   ) : (
     <>
-      <Typography variant="h4">
-        {typeof projectContext?.selectedPrj?.data?.title == "string" &&
-          projectContext?.selectedPrj?.data?.title[0].toUpperCase() +
-          projectContext?.selectedPrj?.data?.title?.slice(1)}
 
-        <Chip
-          sx={{ marginLeft: 2 }}
-          label={new Date(
+      <Grid container alignItems={"center"} justifyContent={"space-between"}>
+
+        <Typography variant="h4">
+          {typeof projectContext?.selectedPrj?.data?.title == "string" &&
+            projectContext?.selectedPrj?.data?.title[0].toUpperCase() +
+            projectContext?.selectedPrj?.data?.title?.slice(1)}
+        </Typography>
+
+        <Typography variant="overline" color="ThreeDShadow">
+          {new Date(
             projectContext?.selectedPrj?.data?.createdAt
           ).toUTCString()}
-        />
-      </Typography>
+        </Typography>
+      </Grid>
 
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography variant="body2">Contributors</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          {projectContext.selectedPrj.data?.contributors?.map((contrib) => (
-            <Chip
-              key={contrib._id}
-              label={contrib.fullName}
-              color="info"
-              sx={{ marginRight: 2 }}
-            />
-          ))}
-        </AccordionDetails>
-      </Accordion>
+      <Grid container alignItems={"center"} columnGap={3}>
+        <Typography variant="subtitle1" textTransform="uppercase">
+          Contributors:
+        </Typography>
+        <Box>
+          {projectContext.selectedPrj.data?.contributors?.map(
+            (contributor) => {
+              console.log(contributor);
+              return (
+                <Tooltip
+                  key={"contributor-" + contributor._id._id}
+                  title={
+                    contributor.role[0].toUpperCase() +
+                    contributor.role.slice(1)
+                  }
+                >
+                  <Chip
+                    style={{
+                      marginRight: ".5rem",
+                      backgroundColor:
+                        contributor.role == UserRole.Admin
+                          ? "#F0ECE5"
+                          : "#B6BBC4",
+                    }}
+                    icon={contributor.role == UserRole.Admin ? <SupervisorAccountIcon /> : <PersonIcon />}
+                    label={contributor.role[0].toUpperCase() + contributor.role.slice(1) + ": " + contributor._id.fullName}
+                  // color={contributor.role == UserRole.Admin ? "primary" : "warning"}
+                  />
+                </Tooltip>
+              );
+            }
+          )}
+        </Box>
+      </Grid>
 
       <Grid
         container
@@ -185,6 +187,7 @@ const PrjContent = () => {
                   ? wipTodos
                   : doneTodos
             }
+            setTodos={setTodos}
             handleStatusChange={handleStatusChange}
           />
         ))}

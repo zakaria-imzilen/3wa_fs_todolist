@@ -140,7 +140,7 @@ const Home = () => {
 		>
 			<Box sx={{ display: 'flex' }}>
 				<CssBaseline />
-				<AppBar position="fixed" open={open}>
+				<AppBar style={{ backgroundColor: "#161A30" }} position="fixed" open={open}>
 					<Toolbar>
 						<IconButton
 							color="inherit"
@@ -156,7 +156,7 @@ const Home = () => {
 						</Typography>
 					</Toolbar>
 				</AppBar>
-				<Box width={"100%"} padding={5}>
+				<Box width={"100%"} padding={5} sx={{ backgroundColor: "#161A30", color: "whitesmoke" }}>
 					<DrawerHeader />
 					<PrjContent />
 				</Box>
@@ -174,7 +174,8 @@ const Home = () => {
 					open={open}
 					onClose={() => setOpen(false)}
 				>
-					<DrawerHeader>
+					<DrawerHeader
+					>
 						<IconButton onClick={() => setOpen(false)} />
 					</DrawerHeader>
 

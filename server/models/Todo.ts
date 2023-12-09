@@ -3,28 +3,28 @@ import { v4 } from "uuid";
 import { TodoStatus } from "../interfaces";
 
 const todoSchema = new Schema({
-    id: {
-        type: String,
-        required: true,
-        default: v4(),
-    },
     label: {
         type: String,
         required: true,
     },
     user: {
         type: Types.ObjectId,
-        ref: "User"
+        ref: "User",
     },
     status: {
         type: String,
-        default: TodoStatus.TODO
+        default: TodoStatus.TODO,
     },
     projectId: {
         type: Types.ObjectId,
-        required: true
-    }
+        required: true,
+    },
+    collaborators: [
+        {
+            type: Types.ObjectId,
+            ref: "User",
+        },
+    ],
 });
-
 
 export default model("Todo", todoSchema);

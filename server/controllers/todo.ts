@@ -15,10 +15,10 @@ export const addTodo = (req: Request, res: Response, next: NextFunction) => {
     }
 
     Todo.create(todo)
-        .then((resp) => {
+        .then((todo) => {
             res.status(201).send({
                 message: "Todo Created successfuly",
-                todoId: resp.toJSON().id,
+                todo
             });
         })
         .catch((err) => {
@@ -60,9 +60,9 @@ export const getProjectTodos = async (
     const { project_id } = req.params;
 
     try {
-        const projectData = await Project.findById(project_id).populate(
-            "contributors"
-        );
+        const projectData = await Project.findById(project_id)
+            .populate("contributors._id")
+            .populate("creator");
 
         res.status(200).send({
             message: "Successfuly retrieved project todos",
@@ -86,7 +86,13 @@ export const createNewTodo = async (
     next: NextFunction
 ) => {
     try {
-        const creatingTodo = (await Todo.create(req.body)).save();
+        const creatingTodo = await (
+            await Todo.create({
+                ...req.body,
+                projectId: req.project._id,
+                user: req.admin._id,
+            })
+        ).save();
 
         if (!createNewTodo)
             return next({ status: 400, message: "Couldn't insert todos" });
