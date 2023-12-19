@@ -9,12 +9,11 @@ export enum UserRole {
 }
 
 export interface UserObj {
-    _id: String,
-    id: String,
+    _id?: String,
     fullName: String,
     email: String,
     pwd: String,
-    role: UserRole
+    profile_image: String
 }
 
 export interface PrjObj {

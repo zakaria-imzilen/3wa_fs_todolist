@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import User from "../models/User";
 import Todo from "../models/Todo";
 import Project from "../models/Project";
-import { TodoObj, TodoStatus, UserRole } from "../interfaces";
+import { TodoObj, TodoStatus, UserObj, UserRole } from "../interfaces";
 import { Types } from "mongoose";
 import { ObjectIdInt } from "../interfaces/dummyDB";
 import { activityLogger } from "./logger";
@@ -27,14 +27,15 @@ type Project = {
     contributors: Array<{}>;
 };
 
-export const generateUsers = (num: number) => {
-    const users: Array<User> = [];
+export const generateUsers = async (num: number) => {
+    const users: Array<UserObj> = [];
 
     for (let i = 0; i < num; i++) {
         users.push({
             fullName: faker.person.fullName(),
             email: faker.internet.email(),
             pwd: faker.internet.password(),
+            profile_image: faker.image.avatar()
         });
     }
 

@@ -35,7 +35,7 @@ const checkingRefToken = (
         return next();
     } catch (error) {
         console.log("Couldn't refresh the JWT token", refreshToken);
-        return next({ status: 500, message: "Refresh token" })
+        return next({ status: 422, message: "Refresh token" })
     }
 
 

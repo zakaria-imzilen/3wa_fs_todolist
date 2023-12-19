@@ -1,30 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { TodoObj } from "../interfaces";
 import Todo from "../models/Todo";
 import { activityLogger } from "../config/logger";
 import { MongooseError } from "mongoose";
 import Project from "../models/Project";
 
 const DOCUMENTS_PER_PAGE = 10;
-
-export const addTodo = (req: Request, res: Response, next: NextFunction) => {
-    const todo: TodoObj = req.body.todo;
-
-    if (!todo || Object.keys(todo).length == 0) {
-        return next({ message: "Todo object is invalid" });
-    }
-
-    Todo.create(todo)
-        .then((todo) => {
-            res.status(201).send({
-                message: "Todo Created successfuly",
-                todo
-            });
-        })
-        .catch((err) => {
-            throw err;
-        });
-};
 
 export const getTodos = (req: Request, res: Response, next: NextFunction) => {
     const page = req.query.page;
@@ -66,7 +46,9 @@ export const getProjectTodos = async (
 
         res.status(200).send({
             message: "Successfuly retrieved project todos",
-            data: await Todo.find({ projectId: project_id }).select("-projectId"),
+            data: await Todo.find({ projectId: project_id })
+                .populate("collaborators")
+                .select("-projectId"),
             project: projectData,
         });
     } catch (err) {
@@ -98,7 +80,10 @@ export const createNewTodo = async (
             return next({ status: 400, message: "Couldn't insert todos" });
         return res
             .status(201)
-            .send({ message: "Successfuly created", data: creatingTodo });
+            .send({
+                message: "Successfuly created",
+                data: await creatingTodo.populate("collaborators"),
+            });
     } catch (error) {
         activityLogger.error(error);
         console.error(error);
@@ -120,7 +105,7 @@ export const updateTodo = async (
     try {
         const updating = await Todo.findOneAndUpdate({ _id: todo_id }, req.body, {
             new: true,
-        });
+        }).populate("collaborators");
 
         if (!updating)
             return res

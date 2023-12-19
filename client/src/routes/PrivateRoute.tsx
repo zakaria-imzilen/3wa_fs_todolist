@@ -18,7 +18,6 @@ const PrivateRoute = () => {
 	// Bad ? Back to Login
 	useEffect(() => {
 		if (!isConnected) {
-
 			loginToken().then((resp) => {
 				console.log("Response", resp);
 				if (!resp.status) {

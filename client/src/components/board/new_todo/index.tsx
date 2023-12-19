@@ -1,11 +1,11 @@
-import React, { Children, useCallback, useContext, useState } from "react";
+import React, { ChangeEvent, Children, useCallback, useContext, useState } from "react";
 import TodoWrapper from "../../wrappers/TodoWrapper";
 import Content from "./Content";
 import Actions from "./Actions";
 import { validateTodoInput } from "../../../utils/validateInputs";
 import { toast } from "react-toastify";
 import { axiosInstance } from "../../../api";
-import { TodoObj, TodoStatus } from "../../../interfaces";
+import { ContributorInt, TodoObj, TodoStatus, UserObj } from "../../../interfaces";
 import project from "../../../context/project";
 import { createTodo } from "../../../api/todo";
 import AlertContext from "../../../context/alert";
@@ -25,8 +25,9 @@ const NewTodo = ({
     const { setOpen } = useContext(AlertContext);
 
     const [newTodoInput, setNewTodoInput] = useState("");
+    const [newTodoCollabs, setNewTodoCollabs] = useState<UserObj[]>([]);
 
-    const onNewTodoInputChange = useCallback(({ target }) => {
+    const onNewTodoInputChange = useCallback(({ target }: ChangeEvent<HTMLInputElement>) => {
         setNewTodoInput(target.value);
     }, []);
 
@@ -38,7 +39,7 @@ const NewTodo = ({
             const requestData = {
                 label: newTodoInput,
                 status: stackStatus,
-                collaborators: [],
+                collaborators: newTodoCollabs,
                 projectId: selectedPrj?.id,
             };
 
@@ -52,11 +53,16 @@ const NewTodo = ({
                 setOpen({ status: true, message: response.message });
                 setTodos((prevTodos) => [...prevTodos, response.newTodoData]);
                 setNewTodoInput("");
+                setNewTodoCollabs([]);
             }
         } else {
             console.error("No project is selected");
         }
-    }, [newTodoInput, selectedPrj]);
+    }, [newTodoInput, newTodoCollabs, selectedPrj]);
+
+    const onAddingCollab = useCallback((collaborator: UserObj) => {
+        setNewTodoCollabs((prev) => ([...prev, collaborator]));
+    }, [newTodoCollabs]);
 
     return (
         <TodoWrapper
@@ -65,9 +71,11 @@ const NewTodo = ({
                 <Content
                     newTodoInput={newTodoInput}
                     onNewTodoInputChange={onNewTodoInputChange}
+                    onAddingCollab={onAddingCollab}
+                    newTodoCollabs={newTodoCollabs}
                 />
             }
-            actions={<Actions onCreateNewTodo={onCreateNewTodo} />}
+            actions={<Actions newTodoInput={newTodoInput} onCreateNewTodo={onCreateNewTodo} />}
         />
     );
 };

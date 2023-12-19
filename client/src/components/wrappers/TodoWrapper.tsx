@@ -18,9 +18,8 @@ const TodoWrapper = ({
   content,
   actions,
   parentStyle
-  // functionnalities
 }: TodoWrapperInt) => (
-  <Grid item xs={12}>
+  <Grid item xs={12} width={"100%"}>
     <Card
       style={parentStyle}
     >

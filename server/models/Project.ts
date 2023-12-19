@@ -22,6 +22,11 @@ const projectSchema = new Schema({
             }
         }
     ],
+    todos: [
+        {
+            type: Types.ObjectId
+        }
+    ]
 }, { timestamps: true });
 
 export default model("Project", projectSchema);

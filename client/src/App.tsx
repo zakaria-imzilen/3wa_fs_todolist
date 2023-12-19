@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import { useState } from "react";
 import "./App.css";
-import { BrowserRouter, Route, RouterProvider, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import UserContext from "./context/user";
 import { privateRoutes, publicRoutes } from "./routes";
 import { UserObj } from "./interfaces";
@@ -46,7 +46,7 @@ function App() {
 								path={route.path}
 								Component={route.Component}
 							>
-								{route.children.map((childRoute) => (
+								{route.children?.map((childRoute) => (
 									<Route
 										key={childRoute.id}
 										path={childRoute.path}

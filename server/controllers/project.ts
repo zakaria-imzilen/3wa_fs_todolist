@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import Project from "../models/Project";
+import { Types } from "mongoose";
 
 export const getProjects = (
     req: Request,
@@ -14,16 +15,13 @@ export const getProjects = (
             message: "Admin id not provided in the params",
         });
 
-    Project.find({ creator: adminId })
-        .select("_id title")
-        // .populate("creator")
-        // .populate("contributors")
-        // .populate({
-        //     path: "todos",
-        //     populate: {
-        //         path: "user"
-        //     }
-        // })
+    Project.find({
+        $or: [
+            { creator: adminId },
+            { contributors: { $in: new Types.ObjectId(adminId) } },
+        ],
+    })
+        .select("title")
         .then((projects) =>
             res.send({ message: "Successfuly projects fetched", data: projects })
         )
@@ -43,8 +41,8 @@ export const getProject = (req: Request, res: Response, next: NextFunction) => {
             path: "contributors",
             populate: {
                 path: "_id",
-                select: "fullName"
-            }
+                select: "fullName",
+            },
         })
         .populate({
             path: "todos", // this property belongs to Project

@@ -1,6 +1,7 @@
 import { toast } from "react-toastify";
 import { axiosInstance } from "../api";
 import {
+    ContributorInt,
     TodoObjNotOptionalProperties,
     TodoStatus,
     UserObj,
@@ -11,6 +12,7 @@ import {
     updateTodoIntFail,
     updateTodoIntSucc,
 } from "../interfaces/api";
+import { AxiosError } from "axios";
 
 export const createTodo = async (newData: {
     label: string;
@@ -37,10 +39,16 @@ export const createTodo = async (newData: {
         };
     } catch (error) {
         console.error(error);
+        if (error instanceof AxiosError || error instanceof TypeError)
+            return {
+                status: false,
+                message: error.message,
+            };
+
         return {
+            message: "Couldn't update the todo",
             status: false,
-            message: error.message ?? "Couldn't create the todo for some reason",
-        };
+        }
     }
 };
 
@@ -59,9 +67,14 @@ export const updateTodo = async (
         return { status: false, message: data.message };
     } catch (error) {
         console.error(error);
-        return {
-            message: error.message ?? "Couldn't update the todo",
+        if (error instanceof AxiosError || error instanceof TypeError) return {
+            message: error.message,
             status: false,
         };
+
+        return ({
+            message: "Couldn't update the todo",
+            status: false,
+        })
     }
 };

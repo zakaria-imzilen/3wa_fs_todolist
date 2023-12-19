@@ -1,4 +1,9 @@
-import React, { useCallback, useContext } from "react";
+import React, {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useContext,
+} from "react";
 import { styled } from "@mui/material/styles";
 import {
     Box,
@@ -28,8 +33,6 @@ import { PrjObj } from "../interfaces";
 
 */
 
-const drawerWidth = 280;
-
 const DrawerHeader = styled("div")(({ theme }) => ({
     display: "flex",
     alignItems: "center",
@@ -39,7 +42,12 @@ const DrawerHeader = styled("div")(({ theme }) => ({
     justifyContent: "flex-end",
 }));
 
-const PrjAside = ({ open, setOpen }) => {
+interface PrjAsideImp {
+    open: boolean;
+    setOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+const PrjAside = ({ open, setOpen }: PrjAsideImp) => {
     const theme = useTheme();
 
     const projectContext = useContext(ProjectContext);
@@ -49,10 +57,13 @@ const PrjAside = ({ open, setOpen }) => {
         setOpen(false);
     }, []);
 
-    const handleSelectPrj = useCallback(({ prjId, selectedPrjId }) => {
-        if (prjId !== selectedPrjId || !selectedPrjId)
-            projectContext?.setSelectedPrj({ id: prjId, data: null });
-    }, []);
+    const handleSelectPrj = useCallback(
+        ({ prjId, selectedPrjId }: { prjId: string; selectedPrjId: string }) => {
+            if (prjId !== selectedPrjId || !selectedPrjId)
+                projectContext?.setSelectedPrj({ id: prjId, data: null });
+        },
+        []
+    );
 
     return (
         <>
@@ -78,12 +89,13 @@ const PrjAside = ({ open, setOpen }) => {
                     {projectContext?.projects?.map((prj: PrjObj) => (
                         <ListItem key={prj._id} disablePadding>
                             <ListItemButton
-                                onClick={() =>
+                                onClick={() => {
                                     handleSelectPrj({
                                         prjId: prj._id,
-                                        selectedPrjId: projectContext.selectedPrj?.id,
-                                    })
-                                }
+                                        selectedPrjId: projectContext.selectedPrj?.id ?? "",
+                                    });
+                                    handleDrawerClose();
+                                }}
                             >
                                 <ListItemIcon>
                                     <WorkIcon style={{ color: "#161A30" }} />
