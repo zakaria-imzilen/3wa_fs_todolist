@@ -55,13 +55,16 @@ export const generateProjects = async (num: number) => {
         const randomUserIds: ObjectIdInt[] = [];
         for (let j = 0; j < 3; j++) {
             const randomId = await guessRandomUserId();
-            if (randomId) {
+            const isAlreadyPushed = randomUserIds.find((userId) => userId == randomId);
+            if (randomId && !isAlreadyPushed) {
                 randomUserIds.push(randomId);
             }
         }
 
         const randomCreatorId = await guessRandomUserId();
-        if (randomCreatorId) {
+        const isAlreadyPushed = randomUserIds.find((userId) => userId == randomCreatorId);
+
+        if (randomCreatorId && !isAlreadyPushed) {
             projects.push({
                 title: faker.word.words(),
                 creator: randomCreatorId,
@@ -143,7 +146,9 @@ const guessRandomUsersIds = async (numberOfIds: number): Promise<ObjectIdInt[] |
             const randomId =
                 randomUsersIds[Math.floor(Math.random() * randomUsersIds.length)]._id;
 
-            idsToReturn.push(randomId);
+            const isAlreadyPushed = idsToReturn.find((userId) => userId === randomId);
+
+            if (!isAlreadyPushed) idsToReturn.push(randomId);
         }
 
         return idsToReturn;

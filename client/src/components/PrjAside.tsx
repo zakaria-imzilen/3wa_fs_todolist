@@ -67,18 +67,10 @@ const PrjAside = ({ open, setOpen }: PrjAsideImp) => {
 
     return (
         <>
-            <DrawerHeader>
+            <DrawerHeader style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <Typography variant="body1">
-                    Welcome {userContext?.user?.data?.fullName}
+                    👋🏻 Welcome {userContext?.user?.data?.fullName}
                 </Typography>
-
-                <IconButton onClick={handleDrawerClose}>
-                    {theme.direction === "ltr" ? (
-                        <ChevronLeftIcon />
-                    ) : (
-                        <ChevronRightIcon />
-                    )}
-                </IconButton>
             </DrawerHeader>
             <Divider />
             <Box>
@@ -87,7 +79,10 @@ const PrjAside = ({ open, setOpen }: PrjAsideImp) => {
                 </Typography>
                 <List>
                     {projectContext?.projects?.map((prj: PrjObj) => (
-                        <ListItem key={prj._id} disablePadding>
+                        <ListItem key={prj._id} disablePadding
+                            className={prj._id == projectContext.selectedPrj?.id ? "active_project" : ""}
+
+                        >
                             <ListItemButton
                                 onClick={() => {
                                     handleSelectPrj({
@@ -98,7 +93,7 @@ const PrjAside = ({ open, setOpen }: PrjAsideImp) => {
                                 }}
                             >
                                 <ListItemIcon>
-                                    <WorkIcon style={{ color: "#161A30" }} />
+                                    <WorkIcon style={{ color: "whitesmoke" }} />
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={prj.title[0].toUpperCase() + prj.title.slice(1)}

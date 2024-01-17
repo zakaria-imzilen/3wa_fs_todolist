@@ -80,3 +80,9 @@ export interface AlertContextInt {
     open: { status: boolean; message: string };
     setOpen: Dispatch<SetStateAction<{ status: boolean; message: string }>>;
 }
+
+
+export interface ILoadingContext {
+    isLoading: boolean;
+    setIsLoading: Dispatch<SetStateAction<boolean>>;
+}

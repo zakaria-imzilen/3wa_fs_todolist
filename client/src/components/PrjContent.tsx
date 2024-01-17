@@ -19,6 +19,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { updateTodo } from "../api/todo";
 import { AxiosError } from "axios";
 import Loading from "./overlays/Loading";
+import LoadingContext from "../context/loading";
 
 const tasksStatus = [TodoStatus.TODO, TodoStatus.WIP, TodoStatus.DONE];
 
@@ -26,9 +27,9 @@ const PrjContent = () => {
   const projectContext = useContext(ProjectContext);
   const userContext = useContext(UserContext);
   const alertContext = useContext(AlertContext);
+  const { setIsLoading } = useContext(LoadingContext);
 
   const [todos, setTodos] = useState<Array<TodoObj>>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const tasksTodos = useMemo<Array<TodoObj>>(
     () => todos.filter((todo) => todo.status == TodoStatus.TODO),
@@ -134,8 +135,6 @@ const PrjContent = () => {
     "No project selected yet"
   ) : projectContext?.selectedPrj?.data ? (
     <>
-      <Loading open={isLoading} />
-
       <Grid container alignItems={"center"} justifyContent={"space-between"}>
         <Typography variant="h4">
           {typeof projectContext?.selectedPrj?.data?.title == "string" &&

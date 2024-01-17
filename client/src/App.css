@@ -3,3 +3,7 @@ a:active {
 	color: inherit;
 	text-decoration: none;
 }
+
+.active_project {
+	background-color: #161a30;
+}

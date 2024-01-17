@@ -1,39 +1,39 @@
-import { Box, CircularProgress, Fade } from "@mui/material";
-import React from "react";
+import { Box, CircularProgress, Container, Fade } from "@mui/material";
 
 interface LoadingInt {
     open: boolean;
 }
 
 const Loading = ({ open }: LoadingInt) => {
-    return (
-        <Box
+    return open ? (
+        <Container
+            maxWidth={false}
             sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
                 position: "absolute",
+                zIndex: 2000,
                 width: "100vw",
                 height: "100vh",
+                inset: 0,
+                background: "rgba(0, 0, 0, .6)",
             }}
         >
-            <Box sx={{ height: 40, background: "white" }}>
-                <Fade
-                    in={open}
-                    style={{
-                        transitionDelay: open ? "800ms" : "0ms",
-                        // position: "absolute",
-                        // top: "50%",
-                        // left: "50%",
-                        // transform: "translate(-50%, -50%)",
-                        // zIndex: 10,
-                    }}
-                    unmountOnExit
-                >
-                    <CircularProgress color="success" />
-                </Fade>
+            <Box
+                sx={{
+                    height: 40,
+                    position: "absolute",
+                    zIndex: 2000,
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)",
+                }}
+            >
+
+                <CircularProgress color="info" disableShrink />
+
             </Box>
-        </Box>
+        </Container>
+    ) : (
+        ""
     );
 };
 

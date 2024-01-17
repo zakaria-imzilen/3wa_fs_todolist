@@ -8,7 +8,8 @@ import { UserObj } from "./interfaces";
 import PrivateRoute from "./routes/PrivateRoute";
 import AlertContext from "./context/alert";
 import { Snackbar } from "@mui/material";
-// import { Snackbar } from "@mui/material";
+import Loading from "./components/overlays/Loading";
+import LoadingContext from "./context/loading"
 
 function App() {
 	const [user, setUser] = useState<{
@@ -20,6 +21,8 @@ function App() {
 		message: "",
 	});
 
+	const [isLoading, setIsLoading] = useState(false);
+
 	const handleCloseSnackbar = useCallback(
 		() => setOpen({ status: false, message: "" }),
 		[open]
@@ -27,37 +30,40 @@ function App() {
 
 	return (
 		<UserContext.Provider value={{ user, setUser }}>
-			<AlertContext.Provider value={{ open, setOpen }}>
-				<BrowserRouter>
-					<Routes>
-						<Route element={<PrivateRoute />}>
-							{privateRoutes.map((route) => (
-								<Route
-									key={route.id}
-									path={route.path}
-									Component={route.component}
-								/>
-							))}
-						</Route>
-
-						{publicRoutes.map((route) => (
-							<Route
-								key={route.id}
-								path={route.path}
-								Component={route.Component}
-							>
-								{route.children?.map((childRoute) => (
+			<Loading open={isLoading} />
+			<LoadingContext.Provider value={{ isLoading, setIsLoading }}>
+				<AlertContext.Provider value={{ open, setOpen }}>
+					<BrowserRouter>
+						<Routes>
+							<Route element={<PrivateRoute />}>
+								{privateRoutes.map((route) => (
 									<Route
-										key={childRoute.id}
-										path={childRoute.path}
-										Component={childRoute.Component}
+										key={route.id}
+										path={route.path}
+										Component={route.component}
 									/>
 								))}
 							</Route>
-						))}
-					</Routes>
-				</BrowserRouter>
-			</AlertContext.Provider>
+
+							{publicRoutes.map((route) => (
+								<Route
+									key={route.id}
+									path={route.path}
+									Component={route.Component}
+								>
+									{route.children?.map((childRoute) => (
+										<Route
+											key={childRoute.id}
+											path={childRoute.path}
+											Component={childRoute.Component}
+										/>
+									))}
+								</Route>
+							))}
+						</Routes>
+					</BrowserRouter>
+				</AlertContext.Provider>
+			</LoadingContext.Provider>
 
 			<Snackbar
 				open={open.status}

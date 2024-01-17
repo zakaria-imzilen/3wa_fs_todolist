@@ -4,10 +4,12 @@ import { Outlet, useNavigate } from "react-router-dom";
 import Loading from "../components/overlays/Loading";
 import { loginToken } from "../api";
 import { toast } from "react-toastify";
+import LoadingContext from "../context/loading";
 
 // 🚨
 const PrivateRoute = () => {
 	const userCtx = useContext(UserContext);
+	const { setIsLoading } = useContext(LoadingContext);
 	const navigate = useNavigate();
 
 	const isConnected = userCtx?.user.isConnected;
@@ -18,6 +20,7 @@ const PrivateRoute = () => {
 	// Bad ? Back to Login
 	useEffect(() => {
 		if (!isConnected) {
+			setIsLoading(true);
 			loginToken().then((resp) => {
 				console.log("Response", resp);
 				if (!resp.status) {
@@ -31,12 +34,14 @@ const PrivateRoute = () => {
 					// resp.data
 					setUser({ isConnected: true, data: resp?.data ?? null });
 				}
+			}).finally(() => {
+				setIsLoading(false);
 			});
 		}
 	}, []); // I keep it empty so if the User logged out -> Won't force him to LOGIN AGAIN
 
 	if (isConnected) return <Outlet />;
-	return <Loading />;
+	return "";
 };
 
 export default PrivateRoute;

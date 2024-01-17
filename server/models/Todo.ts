@@ -25,6 +25,8 @@ const todoSchema = new Schema({
             ref: "User",
         },
     ],
+}, {
+    timestamps: true
 });
 
 export default model("Todo", todoSchema);
